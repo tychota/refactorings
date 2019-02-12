@@ -1,6 +1,7 @@
 interface EnrichedPerfomance extends Perfomance {
   play: Play;
   amount: number;
+  volumeCredits: number;
 }
 type Data = { customer: Invoice["customer"]; performances: EnrichedPerfomance[] };
 export function statement(invoice: Invoice, plays: PlaysMap) {
@@ -13,6 +14,7 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
     const result: Partial<EnrichedPerfomance> = { ...aPerformance };
     result.play = playFor(result as EnrichedPerfomance);
     result.amount = amountFor(result as EnrichedPerfomance);
+    result.volumeCredits = volumeCreditsFor(result as EnrichedPerfomance);
     return result as EnrichedPerfomance;
   }
   function playFor(aPerformance: EnrichedPerfomance) {
@@ -40,6 +42,12 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
     }
     return result;
   }
+  function volumeCreditsFor(aPerformance: EnrichedPerfomance) {
+    let result = 0;
+    result += Math.max(aPerformance.audience - 30, 0);
+    if ("comedy" === aPerformance.play.type) result += Math.floor(aPerformance.audience / 5);
+    return result;
+  }
 }
 
 function renderPlainText(data: Data, plays: PlaysMap) {
@@ -61,7 +69,7 @@ function renderPlainText(data: Data, plays: PlaysMap) {
   function totalVolumeCredits() {
     let result = 0;
     for (let perf of data.performances) {
-      result += volumeCreditsFor(perf);
+      result += perf.volumeCredits;
     }
     return result;
   }
@@ -71,11 +79,5 @@ function renderPlainText(data: Data, plays: PlaysMap) {
       currency: "USD",
       minimumFractionDigits: 2
     }).format(aNumber / 100);
-  }
-  function volumeCreditsFor(aPerformance: EnrichedPerfomance) {
-    let result = 0;
-    result += Math.max(aPerformance.audience - 30, 0);
-    if ("comedy" === aPerformance.play.type) result += Math.floor(aPerformance.audience / 5);
-    return result;
   }
 }
