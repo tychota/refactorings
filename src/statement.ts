@@ -10,12 +10,16 @@ type Data = {
   totalVolumeCredits: number;
 };
 export function statement(invoice: Invoice, plays: PlaysMap) {
+  return renderPlainText(createStatementData(invoice, plays));
+}
+
+function createStatementData(invoice: Invoice, plays: PlaysMap) {
   const statementData: Partial<Data> = {};
   statementData.customer = invoice.customer;
   statementData.performances = invoice.performances.map(enrichPerformance);
   statementData.totalAmount = totalAmount(statementData as Data);
   statementData.totalVolumeCredits = totalVolumeCredits(statementData as Data);
-  return renderPlainText(statementData as Data, plays);
+  return statementData as Data;
 
   function enrichPerformance(aPerformance: Perfomance): EnrichedPerfomance {
     const result: Partial<EnrichedPerfomance> = { ...aPerformance };
@@ -62,8 +66,7 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
     return result;
   }
 }
-
-function renderPlainText(data: Data, plays: PlaysMap) {
+function renderPlainText(data: Data) {
   let result = `Statement for ${data.customer} \n`;
   for (let perf of data.performances) {
     result += `  ${perf.play.name}: ${usd(perf.amount)} (${perf.audience} seats)\n`;
