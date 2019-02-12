@@ -20,13 +20,11 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
   result += `You earned ${volumeCredits} credits \n`;
   return result;
 
-  function volumeCreditsFor(perf: Perfomance) {
-    let volumeCredits = 0;
-    // add volume credits
-    volumeCredits += Math.max(perf.audience - 30, 0);
-    // add extra credits for every ten comedy attendees
-    if ("comedy" === playFor(perf).type) volumeCredits += Math.floor(perf.audience / 5);
-    return volumeCredits;
+  function volumeCreditsFor(aPerformance: Perfomance) {
+    let result = 0;
+    result += Math.max(aPerformance.audience - 30, 0);
+    if ("comedy" === playFor(aPerformance).type) result += Math.floor(aPerformance.audience / 5);
+    return result;
   }
   function playFor(aPerformance: Perfomance) {
     return plays[aPerformance.playID];
