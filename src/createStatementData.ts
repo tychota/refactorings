@@ -12,8 +12,8 @@ export function createStatementData(invoice: Invoice, plays: PlaysMap) {
     const calculator = new PerformanceCalculator(aPerformance, playFor(aPerformance as EnrichedPerfomance));
     const result: Partial<EnrichedPerfomance> = { ...aPerformance };
     result.play = calculator.play;
-    result.amount = amountFor(result as EnrichedPerfomance);
-    result.volumeCredits = volumeCreditsFor(result as EnrichedPerfomance);
+    result.amount = calculator.amount;
+    result.volumeCredits = calculator.volumeCredits;
     return result as EnrichedPerfomance;
   }
   function totalAmount(data: Data) {
@@ -24,15 +24,6 @@ export function createStatementData(invoice: Invoice, plays: PlaysMap) {
   }
   function playFor(aPerformance: EnrichedPerfomance) {
     return plays[aPerformance.playID];
-  }
-  function amountFor(aPerformance: EnrichedPerfomance) {
-    return new PerformanceCalculator(aPerformance, playFor(aPerformance)).amount;
-  }
-  function volumeCreditsFor(aPerformance: EnrichedPerfomance) {
-    let result = 0;
-    result += Math.max(aPerformance.audience - 30, 0);
-    if ("comedy" === aPerformance.play.type) result += Math.floor(aPerformance.audience / 5);
-    return result;
   }
 }
 class PerformanceCalculator {
@@ -66,6 +57,13 @@ class PerformanceCalculator {
       default:
         throw new Error(`unknown type: ${this.play.type}`);
     }
+    return result;
+  }
+
+  get volumeCredits() {
+    let result = 0;
+    result += Math.max(this.performance.audience - 30, 0);
+    if ("comedy" === this.play.type) result += Math.floor(this.performance.audience / 5);
     return result;
   }
 }
