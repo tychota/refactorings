@@ -25,18 +25,10 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
     return result as EnrichedPerfomance;
   }
   function totalAmount(data: Data) {
-    let result = 0;
-    for (let perf of data.performances) {
-      result += perf.amount;
-    }
-    return result;
+    return data.performances.reduce((total, perf) => total + perf.amount, 0);
   }
   function totalVolumeCredits(data: Data) {
-    let result = 0;
-    for (let perf of data.performances) {
-      result += perf.volumeCredits;
-    }
-    return result;
+    return data.performances.reduce((total, perf) => total + perf.volumeCredits, 0);
   }
   function playFor(aPerformance: EnrichedPerfomance) {
     return plays[aPerformance.playID];
