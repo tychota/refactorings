@@ -31,7 +31,7 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
   function amountFor(aPerformance: Perfomance, play: Play) {
     let result = 0;
 
-    switch (play.type) {
+    switch (playFor(aPerformance).type) {
       case "tragedy":
         result = 40000;
         if (aPerformance.audience > 30) {
@@ -46,7 +46,7 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
         result += 300 * aPerformance.audience;
         break;
       default:
-        throw new Error(`unknown type: ${play.type}`);
+        throw new Error(`unknown type: ${playFor(aPerformance).type}`);
     }
     return result;
   }
