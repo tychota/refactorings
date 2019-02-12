@@ -10,7 +10,7 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
   }).format;
 
   for (let perf of invoice.performances) {
-    const play = plays[perf.playID];
+    const play = playFor(perf);
     let thisAmount = amountFor(perf, play);
 
     // add volume credits
@@ -26,6 +26,9 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
   result += `You earned ${volumeCredits} credits \n`;
   return result;
 
+  function playFor(aPerformance: Perfomance) {
+    return plays[aPerformance.playID];
+  }
   function amountFor(aPerformance: Perfomance, play: Play) {
     let result = 0;
 
