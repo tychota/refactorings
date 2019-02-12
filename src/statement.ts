@@ -1,11 +1,24 @@
-export function statement(invoice: Invoice, plays: PlaysMap) {
-  return renderPlainText(invoice, plays);
+interface EnrichedPerfomance extends Perfomance {
+  play: Play;
 }
+type Data = { customer: Invoice["customer"]; performances: EnrichedPerfomance[] };
+export function statement(invoice: Invoice, plays: PlaysMap) {
+  const statementData: Partial<Data> = {};
+  statementData.customer = invoice.customer;
+  statementData.performances = invoice.performances.map(enrichPerformance);
+  return renderPlainText(statementData as Data, plays);
 
-function renderPlainText(invoice: Invoice, plays: PlaysMap) {
-  let result = `Statement for ${invoice.customer} \n`;
-  for (let perf of invoice.performances) {
-    result += `  ${playFor(perf).name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
+  function enrichPerformance(aPerformance: Perfomance): EnrichedPerfomance {
+    return { ...aPerformance, play: playFor(aPerformance) };
+  }
+  function playFor(aPerformance: Perfomance) {
+    return plays[aPerformance.playID];
+  }
+}
+function renderPlainText(data: Data, plays: PlaysMap) {
+  let result = `Statement for ${data.customer} \n`;
+  for (let perf of data.performances) {
+    result += `  ${perf.play.name}: ${usd(amountFor(perf))} (${perf.audience} seats)\n`;
   }
   result += `Amount owed is ${usd(totalAmount())}\n`;
   result += `You earned ${totalVolumeCredits()} credits \n`;
@@ -13,7 +26,7 @@ function renderPlainText(invoice: Invoice, plays: PlaysMap) {
 
   function totalAmount() {
     let result = 0;
-    for (let perf of invoice.performances) {
+    for (let perf of data.performances) {
       // print line for this order
       result += amountFor(perf);
     }
@@ -21,7 +34,7 @@ function renderPlainText(invoice: Invoice, plays: PlaysMap) {
   }
   function totalVolumeCredits() {
     let result = 0;
-    for (let perf of invoice.performances) {
+    for (let perf of data.performances) {
       result += volumeCreditsFor(perf);
     }
     return result;
@@ -33,19 +46,16 @@ function renderPlainText(invoice: Invoice, plays: PlaysMap) {
       minimumFractionDigits: 2
     }).format(aNumber / 100);
   }
-  function volumeCreditsFor(aPerformance: Perfomance) {
+  function volumeCreditsFor(aPerformance: EnrichedPerfomance) {
     let result = 0;
     result += Math.max(aPerformance.audience - 30, 0);
-    if ("comedy" === playFor(aPerformance).type) result += Math.floor(aPerformance.audience / 5);
+    if ("comedy" === aPerformance.play.type) result += Math.floor(aPerformance.audience / 5);
     return result;
   }
-  function playFor(aPerformance: Perfomance) {
-    return plays[aPerformance.playID];
-  }
-  function amountFor(aPerformance: Perfomance) {
+  function amountFor(aPerformance: EnrichedPerfomance) {
     let result = 0;
 
-    switch (playFor(aPerformance).type) {
+    switch (aPerformance.play.type) {
       case "tragedy":
         result = 40000;
         if (aPerformance.audience > 30) {
@@ -60,7 +70,7 @@ function renderPlainText(invoice: Invoice, plays: PlaysMap) {
         result += 300 * aPerformance.audience;
         break;
       default:
-        throw new Error(`unknown type: ${playFor(aPerformance).type}`);
+        throw new Error(`unknown type: ${aPerformance.play.type}`);
     }
     return result;
   }
