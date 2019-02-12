@@ -10,10 +10,7 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
   }).format;
 
   for (let perf of invoice.performances) {
-    // add volume credits
-    volumeCredits += Math.max(perf.audience - 30, 0);
-    // add extra credits for every ten comedy attendees
-    if ("comedy" === playFor(perf).type) volumeCredits += Math.floor(perf.audience / 5);
+    volumeCredits += volumeCreditsFor(perf);
 
     // print line for this order
     result += `  ${playFor(perf).name}: ${format(amountFor(perf) / 100)} (${perf.audience} seats)\n`;
@@ -23,6 +20,14 @@ export function statement(invoice: Invoice, plays: PlaysMap) {
   result += `You earned ${volumeCredits} credits \n`;
   return result;
 
+  function volumeCreditsFor(perf: Perfomance) {
+    let volumeCredits = 0;
+    // add volume credits
+    volumeCredits += Math.max(perf.audience - 30, 0);
+    // add extra credits for every ten comedy attendees
+    if ("comedy" === playFor(perf).type) volumeCredits += Math.floor(perf.audience / 5);
+    return volumeCredits;
+  }
   function playFor(aPerformance: Perfomance) {
     return plays[aPerformance.playID];
   }
